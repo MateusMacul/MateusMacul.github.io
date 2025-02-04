@@ -1,12 +1,12 @@
 ---
 title: "Week 5 Pratical"
 output:
-  pdf_document:
-    number_sections: yes
-  word_document: default
   html_document: 
     number_sections: yes
     toc: yes
+  word_document: default
+  pdf_document:
+    number_sections: yes
 ---
 
 ```{r global-options, include=FALSE}
@@ -21,17 +21,17 @@ In this practical, we will visualize a few data sets with R.
 
 2.  Prodes data - we will open and visualize the deforestation of the Brazillian Amazon from 2000 to 2020. Deforestation of the Amazon or the other ecosystems of Brazil is freely available from the PRODES portal <http://terrabrasilis.dpi.inpe.br/en/download-2/>
 
-3.  Terrabrasilis - we will use Terrabrasilis Analytics API to access the data of the Terrabrasilis portal <https://github.com/terrabrasilis/terrabrasilisAnalyticsAPI>. TerraBrasilis contains an open-source map server (GeoServer (<http://terrabrasilis.dpi.inpe.br/geoserver/web/>) for displaying interoperable spatial data.TerraBrasilis also integrates customized mapping API <https://github.com/Terrabrasilis/terrabrasilis-api> procedures and utilities (<https://github.com/Terrabrasilis/terrabrasilis-util>) as a simple means of creating interactive maps. We will use Terrabrasilis to calculate the area of deforestation for states, for example, Para or Roraima states.
-
-4.  Local case study - we will evaluate the effects of forest fires and droughts from 2016 in a central area of the Amazon called Tapajos National Forest (TNF). First, we will open and visualize the deforestation around this area from different databases (Prodes and MapBiomas). Second, we will visualize the area burned in 2016 and the area of secondary forest still available in the region. Third, we will plot a few maps of precipitation data around this region to investigate the effect of droughts in this region. Fourth, we will overlay all roads of the region inside the land-use map of TNF. Fifth, we will divide the entire region with a few grids of 10 by 10 km (cells). With those cells, we are going to calculate the fraction of burned forest by cells, the number of active fires or hot spots of fires per cell, and the amount of accumulated water deficit. Sixth, with all these grid cells, we are going calculate the correlation between proportions of agriculture (ag_p), pasture (pa_p), urban area (ua_p), non-forest (nf_p), water bodies (wt_p), active fire from Jun 2015 to 2016 (af_total), and burn scar from Jun 2015 to Aug 2016 (bs_total). Finally, we will calculate the correlation between active fire from Jun 2015 to 2016 (af_total) and environmental factors that may have contributed to the droughts, such as drought season length (ds), minimum cumulative water deficit (wd), precipitation (pr), temperature maximum (tx), temperature mean (tm), evapotranspiration mean (em), and evapotranspiration mean (et).
+3.  Local case study - we will evaluate the effects of forest fires and droughts from 2016 in a central area of the Amazon called Tapajos National Forest (TNF). First, we will open and visualize the deforestation around this area from different databases (Prodes and MapBiomas). Second, we will visualize the area burned in 2016 and the area of secondary forest still available in the region. Third, we will plot a few maps of precipitation data around this region to investigate the effect of droughts in this region. Fourth, we will overlay all roads of the region inside the land-use map of TNF. Fifth, we will divide the entire region with a few grids of 10 by 10 km (cells). With those cells, we are going to calculate the fraction of burned forest by cells, the number of active fires or hot spots of fires per cell, and the amount of accumulated water deficit. Sixth, with all these grid cells, we are going calculate the correlation between proportions of agriculture (ag_p), pasture (pa_p), urban area (ua_p), non-forest (nf_p), water bodies (wt_p), active fire from Jun 2015 to 2016 (af_total), and burn scar from Jun 2015 to Aug 2016 (bs_total). Finally, we will calculate the correlation between active fire from Jun 2015 to 2016 (af_total) and environmental factors that may have contributed to the droughts, such as drought season length (ds), minimum cumulative water deficit (wd), precipitation (pr), temperature maximum (tx), temperature mean (tm), evapotranspiration mean (em), and evapotranspiration mean (et).
 
 # Loading libraries and setting the working directory
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
+# installing packages
+install.packages("geobr")
+install.packages("remotes")
+remotes::install_github("r-tmap/tmap")
 
-# install.packages("geobr")
-# install.packages("remotes")
-# remotes::install_github("r-tmap/tmap")
+# calling the packages
 
 library(raster)    # Reading, writing, manipulating, analysing and modelling of spatial data
 library(sf)        # provides simple features access with a geometry list-column
@@ -47,7 +47,7 @@ setwd("/data/GY3440/fernando/week5/")
 
 ```{r}
 
-view(geobr::list_geobr())
+View(geobr::list_geobr())
 ```
 
 ## Visualize the Brazilian states
@@ -84,6 +84,8 @@ map3 <- tm_shape(legal_amazon) +
 map3
 ```
 
+Below, we are using the `"view"` mode of the tmap package to view our map in an interactive mode.
+
 ```{r}
 tmap_mode("view")
 
@@ -97,7 +99,7 @@ map4 <- tm_shape(states)+
 map4
 ```
 
-## Visualization of the indigenous Land, conservation Units, and Urban Areas
+## Visualization of the Indigenous Land, Conservation Units, and Urban Areas
 
 ```{r}
 il <- geobr::read_indigenous_land()    %>% st_make_valid() %>% st_intersection(legal_amazon)
@@ -128,7 +130,7 @@ map5 +
 
 # Deforestation of the Amazon using PRODES data
 
-Let's open the data called prodes_amazonia_raster_2000_2022_v20231109.tif under the folder "data/prodes/prodes_amazonia_raster_2000_2022_v20231109.tif".
+Let's open the data called prodes_amazonia_raster_2000_2022_v20231109.tif under the folder "data/prodes/prodes_amazonia_raster_2000_2022_v20231109.tif" inside our working directory ("/data/GY3440/fernando/week5/"). 
 
 ```{r}
 deforestation <- raster::raster("/data/GY3440/fernando/week5/data/prodes/prodes_amazonia_raster_2000_2022_v20231109.tif")
@@ -244,6 +246,8 @@ classes <- c("d2000",
              "Non-Forest")
 ```
 
+Now, we will plot the deforestation map from the PRODES data set using the color pallete and legend setted above.
+
 ```{r}
 
 raster::plot(deforestation,
@@ -257,7 +261,7 @@ legend("bottom", legend = classes, fill = colours, cex = 0.7, y.intersp = 0.7, n
 
 ## Cropping the raster data from Prodes
 
-Here we are cropping (cutting) the area using geographical coordenates.
+Here we are cropping (cutting) the area using geographical coordinates.
 
 ```{r}
 e <- raster::extent(-56.5956  , -53.58015 , -5.028585 , -1.727968)
@@ -266,7 +270,7 @@ tapajos <- deforestation %>% crop(e)
 raster::plot(tapajos, breaks = brks, col = colours, legend = F) 
 ```
 
-Here we are cropping the area using a shape file data
+Here we are cropping the area using a shapefile data.
 
 ```{r}
 bb <- st_read("/data/GY3440/fernando/week5/data/Area_corte_Mateus.shp") %>% 
@@ -281,9 +285,9 @@ Both approaches produced the same results.
 
 ## Visualization of the MapBiomas land-use data
 
-Loading and plotting the the data from MapBiomas for the year of 2015
+Loading and plotting the data from MapBiomas for the year of 2015.
 
-Note that the MapBiomas data is more rich. It has more land-use classes such as pasture, and other types of forest. The previou map from Prodes data has only deforestation data - no additional land-use classes.
+Note that the MapBiomas data is more rich. It has more land-use classes such as pasture, and other types of forest. The previous map from PRODES data has only deforestation data - no additional land-use classes.
 
 ```{r}
 url <-"/vsicurl/https://storage.googleapis.com/mapbiomas-public/initiatives/brasil/collection_8/lclu/coverage/brasil_coverage_2015.tif"
@@ -382,11 +386,11 @@ tm_shape(precip) +
 
 ```
 
-## Vizualization of the roads of the region
+## Vizualization of the roads in the region
 
 ```{r}
 
-roads <- st_read("/data/GY3440/fernando/week5/data/Roads_interp_wgs84z21_v2.shp")
+roads <- st_read("/data/GY3440/fernando/week5/data/Roads_interp_wgs84z21_v2.shp") # loaidng the roads data.
 
 raster::plot(tapajos2, breaks = brks, col = colours, legend = F, main = "PRODES Deforestation") 
 plot(roads$geometry, add = T)
@@ -404,9 +408,9 @@ tm_shape(landuse)+
 
 ## Landscape analysis by cellular space
 
-Using cellular space is a method for assessing the landscape. Each cell works as a sample of the landscape where de variables are represented. In the loaded dataset as `cells`, the cells are the rows and the variables are the columns.
+Using cellular space is a method for assessing the landscape. Each cell works as a sample of the landscape where the variables are represented. In the loaded dataset as `cells`, the cells are the rows and the variables are the columns.
 
-The varibles are described as the following table:
+The variables are described as the following table:
 
 | **variable suffix** | **Description** | **Category** |
 |:------------------|:----------------------------------|:------------------|
