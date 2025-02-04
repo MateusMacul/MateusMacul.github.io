@@ -47,7 +47,7 @@ setwd("/data/GY3440/fernando/week5/")
 
 ```{r}
 
-View(geobr::list_geobr())
+view(geobr::list_geobr())
 ```
 
 ## Visualize the Brazilian states
